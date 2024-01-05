@@ -3,6 +3,30 @@ import { get, merge } from "lodash";
 
 import { obtenerUsuarioPorToken } from "../db/users";
 
+export const esPropietario = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const usuarioActual = get(req, "identidad._id") as string;
+
+    if (!usuarioActual) {
+      return res.status(403).json({ error: "No autorizado" });
+    }
+
+    if (usuarioActual.toString() !== id) {
+      return res.status(403).json({ error: "No autorizado" });
+    }
+
+    next();
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(400).json({ error: error.message });
+  }
+};
+
 export const estaAutenticado = async (
   req: express.Request,
   res: express.Response,
