@@ -2,6 +2,48 @@ import express from "express";
 import { obtenerUsuarioPorEmail, crearUsuario } from "../db/users";
 import { random, autentication } from "../helpers";
 
+export const login = async (req: express.Request, res: express.Response) => {
+  try {
+    const { correo, contrasena } = req.body;
+
+    if (!correo || !contrasena) {
+      return res.status(403).json({ error: "Campos incompletos" });
+    }
+
+    const usuario = await obtenerUsuarioPorEmail(correo).select(
+      "+autenticacion.sal +autenticacion.contrasena"
+    );
+
+    if (!usuario) {
+      return res.status(403).json({ error: "Usuario inexistente" });
+    }
+
+    const hashEsperado = autentication(usuario.autenticacion.sal, contrasena);
+
+    if (usuario.autenticacion.contrasena !== hashEsperado) {
+      return res.status(403).json({ error: "Contraseña incorrecta" });
+    }
+
+    const sal = random();
+    usuario.autenticacion.tokenSesion = autentication(
+      sal,
+      usuario._id.toString()
+    );
+
+    await usuario.save();
+
+    res.cookie("TOKEN", usuario.autenticacion.tokenSesion, {
+      domain: "localhost",
+      path: "/",
+    });
+
+    return res.status(200).json(usuario).end();
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(400).json({ error: error.message });
+  }
+};
+
 export const registro = async (req: express.Request, res: express.Response) => {
   try {
     const { correo, contrasena, nombre_usuario } = req.body;

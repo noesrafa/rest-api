@@ -28,7 +28,7 @@ const UsuarioSchema = new mongoose.Schema({
 
 export const ModeloUsuario = mongoose.model("Usuario", UsuarioSchema);
 
-export const obtenerUsuarios = ModeloUsuario.find();
+export const obtenerUsuarios = () => ModeloUsuario.find();
 
 export const obtenerUsuarioPorEmail = (email: string) =>
   ModeloUsuario.findOne({ correo: email });
