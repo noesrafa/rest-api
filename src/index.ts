@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import compression from "compression";
 import cors from "cors";
 import moongose from "mongoose";
+import router from "./router";
 
 const app = express();
 
@@ -26,3 +27,5 @@ const MONGO_URL =
 moongose.Promise = Promise;
 moongose.connect(MONGO_URL);
 moongose.connection.on("error", (error: Error) => console.log(error));
+
+app.use("/", router());
